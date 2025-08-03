@@ -1,0 +1,11 @@
+**/logs
+**/saved_models
+**/saved_results
+.idea
+**/__pycache__
+**/wandb
+wandb/
+results/
+datasets/
+dataset
+*.pkl
