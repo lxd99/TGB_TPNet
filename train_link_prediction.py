@@ -112,7 +112,7 @@ if __name__ == "__main__":
     val_metric_all_runs, test_metric_all_runs = [], []
 
     for run in range(args.num_runs):
-        set_random_seed(seed=run, deterministic_alg=True)
+        set_random_seed(seed=run, deterministic_alg=args.use_random_projection or args.model_name == 'NAT')
         set_thread(3)
 
         args.seed = run
@@ -154,8 +154,7 @@ if __name__ == "__main__":
                                            src_node_std_time_shift=src_node_std_time_shift,
                                            dst_node_mean_time_shift_dst=dst_node_mean_time_shift_dst,
                                            dst_node_std_time_shift=dst_node_std_time_shift, device=args.device,
-                                           beta=args.pint_beta, num_hop=args.pint_hop,
-                                           learnable_time_encoder=not args.not_learnable_time_encoder)
+                                           beta=args.pint_beta, num_hop=args.pint_hop)
         elif args.model_name == 'TPNet':
             dynamic_backbone = TPNet(node_raw_features=node_raw_features, edge_raw_features=edge_raw_features,
                                      neighbor_sampler=train_neighbor_sampler,
@@ -394,7 +393,8 @@ if __name__ == "__main__":
             if args.use_random_projection:
                 train_backup_random_projections = random_projections.backup_random_projections()
 
-            val_losses, val_metrics = evaluate_model_link_prediction(model_name=args.model_name,
+            val_losses, val_metrics = evaluate_model_link_prediction(dataset_name = args.dataset_name,
+                                                                    model_name=args.model_name,
                                                                      model=model, dtype='val',
                                                                      eval_metric_name=eval_metric_name,
                                                                      neighbor_sampler=full_neighbor_sampler,
@@ -449,7 +449,8 @@ if __name__ == "__main__":
         # evaluate the best model
         logger.info(f'---------get final performance on dataset {args.dataset_name}-------')
 
-        val_losses, val_metrics = evaluate_model_link_prediction(model_name=args.model_name,
+        val_losses, val_metrics = evaluate_model_link_prediction(dataset_name=args.dataset_name,
+                                                                model_name=args.model_name,
                                                                  model=model, dtype='val',
                                                                  eval_metric_name=eval_metric_name,
                                                                  neighbor_sampler=full_neighbor_sampler,
@@ -461,7 +462,8 @@ if __name__ == "__main__":
                                                                  num_neighbors=args.num_neighbors,
                                                                  time_gap=args.time_gap, logger=logger)
 
-        test_losses, test_metrics = evaluate_model_link_prediction(model_name=args.model_name,
+        test_losses, test_metrics = evaluate_model_link_prediction(dataset_name=args.dataset_name,
+                                                                   model_name=args.model_name,
                                                                    model=model, dtype='test',
                                                                    eval_metric_name=eval_metric_name,
                                                                    neighbor_sampler=full_neighbor_sampler,

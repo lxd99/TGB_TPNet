@@ -14,8 +14,7 @@ class MemoryModel(torch.nn.Module):
                  output_dim: int, time_feat_dim: int, model_name: str = 'TGN', num_layers: int = 2, num_heads: int = 2,
                  dropout: float = 0.1, src_node_mean_time_shift: float = 0.0, src_node_std_time_shift: float = 1.0,
                  dst_node_mean_time_shift_dst: float = 0.0,
-                 dst_node_std_time_shift: float = 1.0, device: str = 'cpu', beta: float = 0.1, num_hop: int = 3,
-                 learnable_time_encoder=True):
+                 dst_node_std_time_shift: float = 1.0, device: str = 'cpu', beta: float = 0.1, num_hop: int = 3):
         """
         General framework for memory-based models, support TGN, DyRep and JODIE.
         :param node_raw_features: ndarray, shape (num_nodes + 1, node_feat_dim)
@@ -57,8 +56,7 @@ class MemoryModel(torch.nn.Module):
         # since models use the identity function for message encoding, message dimension is 2 * memory_dim + time_feat_dim + edge_feat_dim
         self.message_dim = self.memory_dim + self.memory_dim + self.time_feat_dim + self.edge_feat_dim
 
-        #TODO: do not required grads
-        self.time_encoder = TimeEncoder(time_dim=time_feat_dim,parameter_requires_grad=learnable_time_encoder)
+        self.time_encoder = TimeEncoder(time_dim=time_feat_dim,parameter_requires_grad=True)
 
         # message module (models use the identity function for message encoding, hence, we only create MessageAggregator)
         self.message_aggregator = MessageAggregator()
@@ -757,8 +755,8 @@ class GraphAttentionEmbedding(nn.Module):
             # neighbor_times ndarray, shape (batch_size, num_neighbors)
             neighbor_node_ids, neighbor_edge_ids, neighbor_times = \
                 self.neighbor_sampler.get_historical_neighbors(node_ids=node_ids,
-                                                               node_interact_times=node_interact_times,
-                                                               num_neighbors=num_neighbors)
+                                                            node_interact_times=node_interact_times,
+                                                            num_neighbors=num_neighbors)
 
             # get neighbor features from previous layers
             # shape (batch_size * num_neighbors, output_dim)

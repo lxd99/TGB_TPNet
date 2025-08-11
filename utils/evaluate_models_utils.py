@@ -11,7 +11,7 @@ from tgb.linkproppred.evaluate import Evaluator
 from typing import Callable
 
 
-def evaluate_model_link_prediction(model_name: str, model: nn.Module, dtype: str, eval_metric_name: str,
+def evaluate_model_link_prediction(dataset_name:str,model_name: str, model: nn.Module, dtype: str, eval_metric_name: str,
                                    neighbor_sampler: NeighborSampler, evaluate_idx_data_loader: DataLoader,
                                    evaluate_neg_edge_sampler: NegativeEdgeSampler, evaluate_data: Data,
                                    evaluator: Evaluator, loss_func: nn.Module, num_neighbors: int = 20,
@@ -55,6 +55,11 @@ def evaluate_model_link_prediction(model_name: str, model: nn.Module, dtype: str
                                                                            pos_dst=batch_dst_node_ids - 1,
                                                                            pos_timestamp=batch_node_interact_times,
                                                                            split_mode=dtype)
+            # one edge of tgbl-wiki only has 998 negative samples (others has 999 negative samples), 
+            # to avoide mismatched shape when perform batch computation,we pad it with an empty edge
+            if dataset_name == 'tgbl-wiki':
+                batch_neg_dst_node_ids = [x if len(x)==999 else x+[-1] for x in batch_neg_dst_node_ids]
+            
             batch_neg_dst_node_ids = (np.array(
                 batch_neg_dst_node_ids, dtype=batch_src_node_ids.dtype) + 1).reshape(-1)
             num_negative_samples_per_node = len(
